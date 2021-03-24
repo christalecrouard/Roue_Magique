@@ -10,7 +10,7 @@
 
 
 ;************************************************************************
-; 					IMPORT/EXPORT Système
+; 					IMPORT/EXPORT SystÃ¨me
 ;************************************************************************
 
 	IMPORT ||Lib$$Request$$armlib|| [CODE,WEAK]
@@ -18,7 +18,7 @@
 
 
 
-; IMPORT/EXPORT de procédure           
+; IMPORT/EXPORT de procÃ©dure           
 
 	IMPORT Init_Cible
 	IMPORT Allume_LED
@@ -40,7 +40,7 @@
 
 		
 ;*******************************************************************************
-; Procédure principale et point d'entrée du projet
+; ProcÃ©dure principale et point d'entrÃ©e du projet
 ;*******************************************************************************
 main  	PROC 
 ;*******************************************************************************
