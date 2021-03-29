@@ -20,19 +20,23 @@ ARM Macro Assembler    Page 1
    11 00000000         
    12 00000000         ;***************IMPORT/EXPORT***************************
                        *******************
-   13 00000000         
-   14 00000000                 EXPORT           Allume_LED
-   15 00000000                 EXPORT           Eteint_LED
-   16 00000000         
-   17 00000000         ;*******************************************************
-                       *******************
+   13 00000000                 EXPORT           Allume_LED
+   14 00000000                 EXPORT           Eteint_LED
+   15 00000000                 EXPORT           OldEtatUn
+   16 00000000                 EXPORT           OldEtatZero
+   17 00000000                 EXPORT           ChangementLED
    18 00000000         
-   19 00000000         
+   19 00000000                 IMPORT           OldEtat
    20 00000000         
-   21 00000000         ;***************CONSTANTES******************************
+   21 00000000         ;*******************************************************
                        *******************
    22 00000000         
-   23 00000000                 include          REG_UTILES.inc
+   23 00000000         
+   24 00000000         
+   25 00000000         ;***************CONSTANTES******************************
+                       *******************
+   26 00000000         
+   27 00000000                 include          REG_UTILES.inc
     1 00000000         
     2 00000000         ;**************************************
     3 00000000         ;     Les adresess utiles  
@@ -59,16 +63,16 @@ ARM Macro Assembler    Page 1
    24 00000000 40010800 
                        GPIOBASEA
                                EQU              0X40010800
-   25 00000000 40010C00 
-                       GPIOBASEB
-                               EQU              0X40010C00
-   26 00000000         
 
 
 
 ARM Macro Assembler    Page 2 
 
 
+   25 00000000 40010C00 
+                       GPIOBASEB
+                               EQU              0X40010C00
+   26 00000000         
    27 00000000 00000008 
                        OffsetInput
                                EQU              0x08
@@ -124,106 +128,184 @@ ARM Macro Assembler    Page 2
                        TIM4_SR EQU              0x40000810
    48 00000000         
    49 00000000         
-   50 00000000         
-   51 00000000         
-   52 00000000         
-   53 00000000                 END
 
 
 
 ARM Macro Assembler    Page 3 
 
 
-   24 00000000         
-   25 00000000         ;*******************************************************
+   50 00000000         
+   51 00000000         
+   52 00000000         
+   53 00000000                 END
+   28 00000000         
+   29 00000000         ;*******************************************************
                        *******************
-   26 00000000         
-   27 00000000         
-   28 00000000         ;***************VARIABLES*******************************
-                       *******************
-   29 00000000                 AREA             MesDonnees, data, readwrite
-   30 00000000         ;*******************************************************
-                       *******************
+   30 00000000         
    31 00000000         
-   32 00000000         
-   33 00000000         
+   32 00000000         ;***************VARIABLES*******************************
+                       *******************
+   33 00000000                 AREA             MesDonnees, data, readwrite
    34 00000000         ;*******************************************************
                        *******************
    35 00000000         
    36 00000000         
    37 00000000         
-   38 00000000         ;***************CODE************************************
+   38 00000000         ;*******************************************************
                        *******************
-   39 00000000                 AREA             moncode, code, readonly
-   40 00000000         ;*******************************************************
-                       *******************
+   39 00000000         
+   40 00000000         
    41 00000000         
-   42 00000000         
-   43 00000000         
-   44 00000000         
-   45 00000000         
-   46 00000000         ;#######################################################
-                       #################
-   47 00000000         ; Procédure ????
-   48 00000000         ;#######################################################
-                       #################
-   49 00000000         ;
-   50 00000000         ; Paramètre entrant  : ???
-   51 00000000         ; Paramètre sortant  : ???
-   52 00000000         ; Variables globales : ???
-   53 00000000         ; Registres modifiés : ???
-   54 00000000         ;-------------------------------------------------------
-                       -----------------
-   55 00000000         
-   56 00000000         ; pour allumer la LED avec le registre SET
-   57 00000000         ;(PortB.Set)16= <- (0x01 << 10)
-   58 00000000         ;mettre le bit 10 de SET à 1
-   59 00000000         
-   60 00000000         Allume_LED
+   42 00000000         ;***************CODE************************************
+                       *******************
+   43 00000000                 AREA             moncode, code, readonly
+   44 00000000         ;*******************************************************
+                       *******************
+   45 00000000         Allume_LED
                                PROC
-   61 00000000 4904            LDR              R1, = GPIOBASEB
-   62 00000002 F44F 6280       MOV              R2, #(0x01 << 10)
-   63 00000006 820A            STRH             R2, [R1, #OffsetSet]
-   64 00000008 4770            BX               LR
-   65 0000000A                 ENDP
-   66 0000000A         
-   67 0000000A         ; pour éteindre la LED avec le registre RESET
-   68 0000000A         ;(PortB.Reset)16= <- (0x01 << 10)
-   69 0000000A         Eteint_LED
+   46 00000000 B500            PUSH             {LR}
+   47 00000002         
+   48 00000002         ; pour allumer la LED avec le registre SET
+   49 00000002         ;(PortB.Set)16= <- (0x01 << 10)
+   50 00000002         ;mettre le bit 10 de SET à 1
+   51 00000002 491F            LDR              R1, = GPIOBASEB
+   52 00000004         
+   53 00000004 F44F 6280       MOV              R2, #(0x01 << 10)
+   54 00000008 820A            STRH             R2, [R1, #OffsetSet]
+   55 0000000A         
+   56 0000000A         
+   57 0000000A F85D EB04       POP              {LR}
+   58 0000000E 4770            BX               LR
+   59 00000010                 ENDP
+   60 00000010         
+   61 00000010         Eteint_LED
                                PROC
-   70 0000000A F44F 6280       MOV              R2, #(0x01 << 10)
-   71 0000000E 828A            STRH             R2, [R1, #OffsetReset]
+   62 00000010 B500            PUSH             {LR}
+   63 00000012         ; pour éteindre la LED avec le registre RESET
+   64 00000012         ;(PortB.Reset)16= <- (0x01 << 10)
+   65 00000012 491B            LDR              R1, = GPIOBASEB
+   66 00000014         
+   67 00000014 F44F 6280       MOV              R2, #(0x01 << 10)
+   68 00000018 828A            STRH             R2, [R1, #OffsetReset]
+   69 0000001A         
+   70 0000001A F85D EB04       POP              {LR}
+   71 0000001E 4770            BX               LR
+   72 00000020                 ENDP
+   73 00000020         
+   74 00000020         OldEtatUn
 
 
 
 ARM Macro Assembler    Page 4 
 
 
-   72 00000010 4770            BX               LR
-   73 00000012                 ENDP
-   74 00000012         
-   75 00000012         ; pour allumer la LED avec le registre output
-   76 00000012         ;Etat_PortB = <- (PortB.Output)16
-   77 00000012         ;Etat_PortB = (Etat_PortB) ou (0x01 << 10)
-   78 00000012         ;(PortB.Output)16 = <- Etat_PortB
-   79 00000012         ;LDRH R3, [R1, #OffsetOutput]
-   80 00000012         ;ORR R4, R3, R2
-   81 00000012         ;STRH R4,  [R1, #OffsetOutput]
-   82 00000012         
-   83 00000012         ; pour éteindre la LED avec le registre output
-   84 00000012         ;Etat_PortB = <- (PortB.Output)16
-   85 00000012         ;Etat_PortB = (Etat_PortB) et not((0x01 << 10))
-   86 00000012         ;(PortB.Output)16 = <- Etat_PortB
-   87 00000012         ;LDRH R3, [R1, #OffsetOutput]
-   88 00000012         ;MOV R2, #(0x01 << 10)
-   89 00000012         ;MVN R5, R2
-   90 00000012         ;AND R4, R3, R5
-   91 00000012         ;STRH R4, [R1, #OffsetOutput]
-   92 00000012         
-   93 00000012         ;*******************************************************
+                               PROC
+   75 00000020         ;Pour mettre la variable OldEtat à 1
+   76 00000020 F8DF 8060       LDR              R8, = OldEtat
+   77 00000024 F9B8 B000       LDRSH            R11, [R8]
+   78 00000028 F04F 0B01       MOV              R11, #0x01
+   79 0000002C F8A8 B000       STRH             R11, [R8]   ;OldEtat à 1
+   80 00000030         
+   81 00000030 4770            BX               LR
+   82 00000032                 ENDP
+   83 00000032         
+   84 00000032         OldEtatZero
+                               PROC
+   85 00000032         ;Pour mettre la variable OldEtat à 0
+   86 00000032 F8DF 8050       LDR              R8, = OldEtat
+   87 00000036 F9B8 B000       LDRSH            R11, [R8]
+   88 0000003A F04F 0B00       MOV              R11, #0x00
+   89 0000003E F8A8 B000       STRH             R11, [R8]   ;OldEtat à 0
+   90 00000042         
+   91 00000042 4770            BX               LR
+   92 00000044                 ENDP
+   93 00000044         
+   94 00000044         
+   95 00000044         AllumeLEDOutput
+                               PROC
+   96 00000044         ; pour allumer la LED avec le registre output
+   97 00000044         ;Etat_PortB = <- (PortB.Output)16
+   98 00000044         ;Etat_PortB = (Etat_PortB) ou (0x01 << 10)
+   99 00000044         ;(PortB.Output)16 = <- Etat_PortB
+  100 00000044         
+  101 00000044 898B            LDRH             R3, [R1, #OffsetOutput]
+  102 00000046 EA43 0402       ORR              R4, R3, R2
+  103 0000004A 818C            STRH             R4,  [R1, #OffsetOutput]
+  104 0000004C         
+  105 0000004C 4770            BX               LR
+  106 0000004E                 ENDP
+  107 0000004E         
+  108 0000004E         EteintLEDOutput
+                               PROC
+  109 0000004E         ; pour éteindre la LED avec le registre output
+  110 0000004E         ;Etat_PortB = <- (PortB.Output)16
+  111 0000004E         ;Etat_PortB = (Etat_PortB) et not((0x01 << 10))
+  112 0000004E         ;(PortB.Output)16 = <- Etat_PortB
+  113 0000004E         
+  114 0000004E 898B            LDRH             R3, [R1, #OffsetOutput]
+  115 00000050 F44F 6280       MOV              R2, #(0x01 << 10)
+  116 00000054 EA6F 0502       MVN              R5, R2
+  117 00000058 EA03 0405       AND              R4, R3, R5
+  118 0000005C 818C            STRH             R4, [R1, #OffsetOutput]
+  119 0000005E         
+  120 0000005E 4770            BX               LR
+  121 00000060                 ENDP
+  122 00000060         
+  123 00000060         ChangementLED
+                               PROC
+  124 00000060         
+  125 00000060 2F01    SiLED   CMP              R7, #1
+  126 00000062 D005            BEQ              SinonLED
+  127 00000064         
+  128 00000064 B500            PUSH             {LR}
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  129 00000066 F7FF FFFE       BL               Allume_LED  ; pour allumer la L
+                                                            ED avec le registre
+                                                             SET
+  130 0000006A F04F 0701       MOV              R7, #1
+  131 0000006E E004            B                SortieLED
+  132 00000070         
+  133 00000070         SinonLED
+  134 00000070 B500            PUSH             {LR}
+  135 00000072 F7FF FFFE       BL               Eteint_LED  ; pour éteindre la 
+                                                            LED avec le registr
+                                                            e RESET
+  136 00000076 F04F 0700       MOV              R7, #0
+  137 0000007A         
+  138 0000007A         SortieLED
+  139 0000007A F85D EB04       POP              {LR}
+  140 0000007E 4770            BX               LR
+  141 00000080                 ENDP
+  142 00000080         
+  143 00000080         ;#######################################################
+                       #################
+  144 00000080         ; Procédure ????
+  145 00000080         ;#######################################################
+                       #################
+  146 00000080         ;
+  147 00000080         ; Paramètre entrant  : ???
+  148 00000080         ; Paramètre sortant  : ???
+  149 00000080         ; Variables globales : ???
+  150 00000080         ; Registres modifiés : ???
+  151 00000080         ;-------------------------------------------------------
+                       -----------------
+  152 00000080         
+  153 00000080         
+  154 00000080         
+  155 00000080         
+  156 00000080         
+  157 00000080         
+  158 00000080         
+  159 00000080         ;*******************************************************
                        *******************
-   94 00000012                 END
-              00 00 40010C00 
+  160 00000080                 END
+              40010C00 
+              00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
 ork --depend=.\objects\fonctionetape.d -o.\objects\fonctionetape.o -I.\RTE\Devi
 ce\STM32F103RB -I.\RTE\_Simul_ -ID:\Users\gwlow\AppData\Local\Arm\Packs\ARM\CMS
@@ -242,7 +324,7 @@ MesDonnees 00000000
 
 Symbol: MesDonnees
    Definitions
-      At line 29 in file FonctionEtape.asm
+      At line 33 in file FonctionEtape.asm
    Uses
       None
 Comment: MesDonnees unused
@@ -253,31 +335,103 @@ Comment: MesDonnees unused
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Relocatable symbols
 
+AllumeLEDOutput 00000044
+
+Symbol: AllumeLEDOutput
+   Definitions
+      At line 95 in file FonctionEtape.asm
+   Uses
+      None
+Comment: AllumeLEDOutput unused
 Allume_LED 00000000
 
 Symbol: Allume_LED
    Definitions
-      At line 60 in file FonctionEtape.asm
+      At line 45 in file FonctionEtape.asm
    Uses
-      At line 14 in file FonctionEtape.asm
-Comment: Allume_LED used once
-Eteint_LED 0000000A
+      At line 13 in file FonctionEtape.asm
+      At line 129 in file FonctionEtape.asm
+
+ChangementLED 00000060
+
+Symbol: ChangementLED
+   Definitions
+      At line 123 in file FonctionEtape.asm
+   Uses
+      At line 17 in file FonctionEtape.asm
+Comment: ChangementLED used once
+EteintLEDOutput 0000004E
+
+Symbol: EteintLEDOutput
+   Definitions
+      At line 108 in file FonctionEtape.asm
+   Uses
+      None
+Comment: EteintLEDOutput unused
+Eteint_LED 00000010
 
 Symbol: Eteint_LED
    Definitions
-      At line 69 in file FonctionEtape.asm
+      At line 61 in file FonctionEtape.asm
+   Uses
+      At line 14 in file FonctionEtape.asm
+      At line 135 in file FonctionEtape.asm
+
+OldEtatUn 00000020
+
+Symbol: OldEtatUn
+   Definitions
+      At line 74 in file FonctionEtape.asm
    Uses
       At line 15 in file FonctionEtape.asm
-Comment: Eteint_LED used once
+Comment: OldEtatUn used once
+OldEtatZero 00000032
+
+Symbol: OldEtatZero
+   Definitions
+      At line 84 in file FonctionEtape.asm
+   Uses
+      At line 16 in file FonctionEtape.asm
+Comment: OldEtatZero used once
+SiLED 00000060
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: SiLED
+   Definitions
+      At line 125 in file FonctionEtape.asm
+   Uses
+      None
+Comment: SiLED unused
+SinonLED 00000070
+
+Symbol: SinonLED
+   Definitions
+      At line 133 in file FonctionEtape.asm
+   Uses
+      At line 126 in file FonctionEtape.asm
+Comment: SinonLED used once
+SortieLED 0000007A
+
+Symbol: SortieLED
+   Definitions
+      At line 138 in file FonctionEtape.asm
+   Uses
+      At line 131 in file FonctionEtape.asm
+Comment: SortieLED used once
 moncode 00000000
 
 Symbol: moncode
    Definitions
-      At line 39 in file FonctionEtape.asm
+      At line 43 in file FonctionEtape.asm
    Uses
       None
 Comment: moncode unused
-3 symbols
+11 symbols
 
 
 
@@ -298,8 +452,9 @@ Symbol: GPIOBASEB
    Definitions
       At line 25 in file REG_UTILES.inc
    Uses
-      At line 61 in file FonctionEtape.asm
-Comment: GPIOBASEB used once
+      At line 51 in file FonctionEtape.asm
+      At line 65 in file FonctionEtape.asm
+
 MaskBlank 00000004
 
 Symbol: MaskBlank
@@ -342,13 +497,13 @@ Symbol: MaskSerial_Dots
 Comment: MaskSerial_Dots unused
 MaskSerial_In1 00000080
 
-Symbol: MaskSerial_In1
 
 
 
 ARM Macro Assembler    Page 2 Alphabetic symbol ordering
 Absolute symbols
 
+Symbol: MaskSerial_In1
    Definitions
       At line 33 in file REG_UTILES.inc
    Uses
@@ -384,15 +539,18 @@ Symbol: OffsetOutput
    Definitions
       At line 28 in file REG_UTILES.inc
    Uses
-      None
-Comment: OffsetOutput unused
+      At line 101 in file FonctionEtape.asm
+      At line 103 in file FonctionEtape.asm
+      At line 114 in file FonctionEtape.asm
+      At line 118 in file FonctionEtape.asm
+
 OffsetReset 00000014
 
 Symbol: OffsetReset
    Definitions
       At line 30 in file REG_UTILES.inc
    Uses
-      At line 71 in file FonctionEtape.asm
+      At line 68 in file FonctionEtape.asm
 Comment: OffsetReset used once
 OffsetSet 00000010
 
@@ -400,20 +558,20 @@ Symbol: OffsetSet
    Definitions
       At line 29 in file REG_UTILES.inc
    Uses
-      At line 63 in file FonctionEtape.asm
+      At line 54 in file FonctionEtape.asm
 Comment: OffsetSet used once
 SCB_VTOR E000ED08
 
-Symbol: SCB_VTOR
-   Definitions
-      At line 43 in file REG_UTILES.inc
-   Uses
 
 
 
 ARM Macro Assembler    Page 3 Alphabetic symbol ordering
 Absolute symbols
 
+Symbol: SCB_VTOR
+   Definitions
+      At line 43 in file REG_UTILES.inc
+   Uses
       None
 Comment: SCB_VTOR unused
 TIM1_CNT 40012C24
@@ -449,4 +607,20 @@ Symbol: TIM4_SR
       None
 Comment: TIM4_SR unused
 19 symbols
-360 symbols in table
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+OldEtat 00000000
+
+Symbol: OldEtat
+   Definitions
+      At line 19 in file FonctionEtape.asm
+   Uses
+      At line 76 in file FonctionEtape.asm
+      At line 86 in file FonctionEtape.asm
+
+1 symbol
+369 symbols in table
