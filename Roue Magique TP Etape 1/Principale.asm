@@ -39,6 +39,8 @@
 OldEtat DCW 0x00
 	EXPORT OldEtat
 
+N 		DCB 10
+
 ;*******************************************************************************
 	
 	AREA  moncode, code, readonly
@@ -62,8 +64,8 @@ main  	PROC
 		
 		BL Init_Cible ;Init_cible(0)
 		
-		BL Eteint_LED ;
-		MOV R7, #0
+		;BL Eteint_LED
+		;MOV R7, #0
 		
 		LDR R8, = OldEtat
 		LDRSH R11, [R8]
@@ -72,8 +74,9 @@ main  	PROC
 		LDR R0, = GPIOBASEA
 		LDR R9, [R0, #OffsetInput]
 
-		MOV R4, #0
-		MOV R5, #4 ; Nombre de Passage 
+		MOV R4, #0	; Compteur initialisé à 0
+		LDR R0, = N ; Nombre de Passage 
+		LDRSH R5, [R0]
 	
 	
 		;if oldetat == 0 et capteur == 1 => front montant
@@ -82,7 +85,7 @@ main  	PROC
 
 
 Tantque CMP R4, R5			; Comparaison du compteur pour choisir d'entrer dans ou de passer la boucle
-		BGE SortieBoucle	; Sortie de la boucle si le compteur atteint le nombre
+		BGT SortieBoucle	; Sortie de la boucle si le compteur atteint le nombre
 
 		LDR R0, = GPIOBASEA
 		LDR R9, [R0, #OffsetInput]	; Initialisation du capteur
