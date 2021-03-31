@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'Etape_1' 
+ * Project: 'Etape_2' 
  * Target:  'Simulé' 
  */
 

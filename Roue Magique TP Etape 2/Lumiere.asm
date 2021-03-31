@@ -31,7 +31,7 @@
 	 AREA  MesDonnees, data, readwrite
 ;**************************************************************************
 
-Barrette1 	DCB 0XFF, 0x00, 0x00
+Barrette1 	DCB 0XAA, 0xAA, 0xAA
 			DCB 0X00, 0x00, 0x00
 			DCB 0X00, 0x00, 0x00
 			DCB 0X00, 0x00, 0x00
@@ -46,7 +46,7 @@ Barrette1 	DCB 0XFF, 0x00, 0x00
 			DCB 0X00, 0x00, 0x00
 			DCB 0X00, 0x00, 0x00
 			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0xFF
+			DCB 0XFF, 0xFF, 0xFF
 			
 
 ;**************************************************************************

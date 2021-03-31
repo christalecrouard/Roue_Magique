@@ -18,10 +18,12 @@
 			
 			
 		EXPORT DriverGlobal
+		EXPORT Tempo
 		IMPORT Barrette1
 
 
 		IMPORT OldEtat
+		IMPORT DataSend
 
 ;**************************************************************************
 
@@ -49,40 +51,73 @@
 ;**************************************************************************
 
 DriverGlobal PROC
-	POP {R1,R2}
+	PUSH {R1,R2,R3,R4,R5,R6,R7,R8}
+	
+	MOV R3, #0	;Initilisation du cpteur nbled à 0
+	MOV R4, #1	;Initilisation du cpteur nbbit à 0
+	
+	
 	;Set SCLK
 	LDR R1, = GPIOBASEA
 	MOV R2, #(0x01 << 5)
 	STRH R2, [R1, #OffsetSet] ; sur le modèle de ce qui a été fait en étape 1 : mise à 1 de SCLK
 	
 	;1-Pour NbLed = 1 à 48
-For1
-		;(ValCourante)8 ? Barette1[NbLed]
-		;(ValCourante)32 ? (ValCourante)8 << 24 
+For1	CMP R3, #48	;Mettre en variable globale Nbled
+		BGT FinFor1
+		
+		;(ValCourante)8 <- Barette1[NbLed]
+		LDRB R5,[R6,R3]
+		
+		;(ValCourante)32 <- (ValCourante)8 << 24 
+		LSL R7,R5,#24
 		
 		;2-Pour NbBit = 1 à 12
-For2
+For2	CMP R4, #12 ;Mettre en variable globale NbBit
+		BGT FinFor2
+		
+		;ValCourante)32 ? (ValCourante)32 << 1 ; on positionne le bit suivant
+		LSLS R7,R7,#1
+		
 			;Reset(SCLK)
-			LDR R1, = GPIOBASEA
-			MOV R2, #(0x01 << 5)
-			STRH R2, [R1, #OffsetReset]
+		LDR R1, = GPIOBASEA
+		MOV R2, #(0x01 << 5)
+		STRH R2, [R1, #OffsetReset]
 			
 			;Si (PF((ValCourante)32) = 1) ; PF indique le bit poids fort de la valeur
+Sid		BCC Sinon
 				;Set(Sin)
+		LDR R1, = GPIOBASEA
+		MOV R2, #(0x01 << 7)
+		STRH R2, [R1, #OffsetSet]
+		B FinSid
+		
 			;Sinon 
+Sinon		
 				;ReSet(Sin)
+		LDR R1, = GPIOBASEA
+		MOV R2, #(0x01 << 7)
+		STRH R2, [R1, #OffsetReset]
+		
 			;FinSi
+FinSid				
 			
-			;ValCourante)32 ? (ValCourante)32 << 1 ; on positionne le bit suivant
 			
 			;Set(SCLK)
-			LDR R1, = GPIOBASEA
-			MOV R2, #(0x01 << 5)
-			STRH R2, [R1, #OffsetSet]
+		LDR R1, = GPIOBASEA
+		MOV R2, #(0x01 << 5)
+		STRH R2, [R1, #OffsetSet]
 			
-		;2-FinPour
+		;2-FinPour	
+		ADD R4,R4,#1	
+		B For2
+FinFor2		
 	;1-FinPour
-FinFor1
+		MOV R4, #0
+		ADD R3,R3,#1
+		B For1
+FinFor1		
+
 
 	;Reset SCLK
 	LDR R1, = GPIOBASEA
@@ -90,30 +125,60 @@ FinFor1
 	STRH R2, [R1, #OffsetReset]
 	
 	;Datasend prend 0
+	MOV R1,#0
+	LDR R8,=DataSend
+	STRB R1,[R8]
 	
-	
+	POP {R1,R2,R3,R4,R5,R6,R7}
 	BX LR
 	ENDP
 
+Tempo PROC
+	
+	PUSH {R1,R2,R3}
+	MOV R1, #0
+	MOV R2, #0
+	MOV R3, #10
+	MUL R5, R4,R3 ;R5 prend N fois 10
+
+ForT	CMP R1, R5
+		BGT FinForT
+		
+ForT2	TST R2, #900	;Mettre en variable globale Nbled
+		BGT FinForT2
+		NOP
+		NOP
+		NOP
+		NOP
+		
+		ADD R2,R2, #1
+		B ForT2
+FinForT2 
+		ADD R1,R1, #1
+		B ForT
+FinForT
+
+	POP {R1,R2,R3}
+	BX LR
+	ENDP
 
 Allume_LED PROC 
-		PUSH {LR}
+		PUSH {R1,R2}
 		
 		; pour allumer la LED avec le registre SET
 		;(PortB.Set)16= <- (0x01 << 10)
 		;mettre le bit 10 de SET à 1
 		LDR R1, = GPIOBASEB
-		
 		MOV R2, #(0x01 << 10)
 		STRH R2, [R1, #OffsetSet]
 		
 		
-		POP {LR}
+		POP {R1,R2}
 		BX LR
 		ENDP
 			
 Eteint_LED PROC 
-		PUSH {LR}
+		PUSH {R1,R2}
 		; pour éteindre la LED avec le registre RESET
 		;(PortB.Reset)16= <- (0x01 << 10)
 		LDR R1, = GPIOBASEB
@@ -121,7 +186,7 @@ Eteint_LED PROC
 		MOV R2, #(0x01 << 10)
 		STRH R2, [R1, #OffsetReset]
 		
-		POP {LR}
+		POP {R1,R2}
 		BX LR
 		ENDP
 			
@@ -175,17 +240,17 @@ EteintLEDOutput PROC
 		ENDP
 			
 ChangementLED PROC
-	
+		PUSH {LR}
 SiLED 	CMP R7, #1
 		BEQ SinonLED
 		
-		PUSH {LR}
+		
 		BL Allume_LED	; pour allumer la LED avec le registre SET
 		MOV R7, #1
 		B SortieLED
 		
 SinonLED 
-		PUSH {LR}
+		
 		BL Eteint_LED	; pour éteindre la LED avec le registre RESET
 		MOV R7, #0
 
