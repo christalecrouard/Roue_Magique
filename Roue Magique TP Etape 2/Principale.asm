@@ -22,8 +22,17 @@
 	IMPORT ChangementLED
 
 	IMPORT DriverGlobal
+	IMPORT DriverReg
+	IMPORT DriverPile
 	IMPORT Tempo
-	IMPORT Barrette1
+	
+	IMPORT Bleu
+	IMPORT Blanc
+	IMPORT Rouge
+	IMPORT PBleu
+	IMPORT PBlanc
+	IMPORT PRouge
+	IMPORT France
 
 
 ; IMPORT/EXPORT de procédure           
@@ -42,8 +51,8 @@
 OldEtat DCW 0x00
 	EXPORT OldEtat
 
-N 		equ 10
-
+N 		equ 500
+	EXPORT N
 
 	;IMPORT DataSend
 
@@ -70,15 +79,109 @@ main  	PROC
 		
 		BL Init_Cible ;Init_cible(1)
 		
-		mov R4, #N
+		MOV R4, #N
+
+;BoucleReg
+;		LDR R6, = Bleu
+;		BL DriverReg
+;	
+;		BL Tempo
+;		
+;		LDR R6, = Blanc
+;		BL DriverReg
+;		
+;		BL Tempo
+;		
+;		LDR R6, = Rouge
+;		BL DriverReg
+;		
+;		BL Tempo
+;		
+;		LDR R6, = PBleu
+;		BL DriverReg
+;		
+;		BL Tempo
+;		
+;		LDR R6, = PBlanc
+;		BL DriverReg
+;		
+;		BL Tempo
+;		
+;		LDR R6, = PRouge
+;		BL DriverReg
+;		
+;		BL Tempo
+;		
+;		LDR R6, = France
+;		BL DriverReg
+;		
+;		BL Tempo
+;		BL Tempo
+;		BL Tempo
+
+;		B BoucleReg
+; Meme boucle réalisée ci-dessous mais en utilisant DriverReg		
+		
+		
+		
+		
+BouclePile
+
+		LDR R9, = Bleu
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
+	
+		BL Tempo
+		
+		LDR R9, = Blanc
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
 		
 		BL Tempo
 		
-		LDR R6, = Barrette1
+		LDR R9, = Rouge
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
 		
-		;LDRSH R11, [R8]
+		BL Tempo
 		
-		BL DriverGlobal
+		LDR R9, = PBleu
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
+		
+		BL Tempo
+		
+		LDR R9, = PBlanc
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
+		
+		BL Tempo
+		
+		LDR R9, = PRouge
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
+		
+		BL Tempo
+		
+		LDR R9, = France
+		PUSH {R9}
+		BL DriverPile		
+		ADD SP, #4
+		
+		BL Tempo
+		BL Tempo
+		BL Tempo
+
+		
+		BL Tempo
+		
+		B BouclePile
 		
 ;		;Tantque(vrai)
 ;		;rien Faire ; boucle infinie terminale

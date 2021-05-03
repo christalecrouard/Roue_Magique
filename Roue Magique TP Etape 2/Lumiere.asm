@@ -11,10 +11,15 @@
 
 ;***************IMPORT/EXPORT**********************************************
 		
-		EXPORT Barrette1
+		EXPORT Bleu
+		EXPORT Blanc
+		EXPORT Rouge
+		EXPORT PBleu
+		EXPORT PBlanc
+		EXPORT PRouge
+		EXPORT France	
 
-			
-		IMPORT OldEtat
+
 
 ;**************************************************************************
 
@@ -31,22 +36,124 @@
 	 AREA  MesDonnees, data, readwrite
 ;**************************************************************************
 
-Barrette1 	DCB 0XAA, 0xAA, 0xAA
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0X00, 0x00, 0x00
-			DCB 0XFF, 0xFF, 0xFF
+Blanc 		DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255 ;blanc
+
+Bleu 		DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0 ;bleu
+			
+Rouge	 	DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255 ;rouge
+
+PBlanc 		DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0 ;petitblanc
+
+PBleu 		DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0 ;petitbleu
+			
+PRouge	 	DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0
+			DCB 0, 0, 0 ;petitrouge
+			
+France		DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 0, 0, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 255, 255
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0
+			DCB 255, 0, 0 ;france
 			
 
 ;**************************************************************************
