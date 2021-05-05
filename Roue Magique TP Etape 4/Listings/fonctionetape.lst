@@ -1,0 +1,2058 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;*******************************************************
+                       ********************
+    2 00000000                 THUMB
+    3 00000000                 REQUIRE8
+    4 00000000                 PRESERVE8
+    5 00000000         
+    6 00000000         ;*******************************************************
+                       *******************
+    7 00000000         ;  Fichier Vierge.asm
+    8 00000000         ; Auteur : V.MAHOUT
+    9 00000000         ; Date :  12/11/2013
+   10 00000000         ;*******************************************************
+                       *******************
+   11 00000000         
+   12 00000000         ;***************IMPORT/EXPORT***************************
+                       *******************
+   13 00000000         
+   14 00000000                 EXPORT           Allume_LED
+   15 00000000                 EXPORT           Eteint_LED
+   16 00000000                 EXPORT           OldEtatUn
+   17 00000000                 EXPORT           OldEtatZero
+   18 00000000                 EXPORT           ChangementLED
+   19 00000000         
+   20 00000000                 EXPORT           DriverGlobal
+   21 00000000                 EXPORT           DriverReg
+   22 00000000                 EXPORT           DriverPile
+   23 00000000         
+   24 00000000                 EXPORT           Tempo
+   25 00000000         
+   26 00000000                 IMPORT           OldEtat
+   27 00000000                 IMPORT           DataSend
+   28 00000000                 IMPORT           N
+   29 00000000         
+   30 00000000                 IMPORT           Blanc
+   31 00000000                 IMPORT           Mire
+   32 00000000         
+   33 00000000                 IMPORT           Run_Timer4
+   34 00000000                 IMPORT           Stop_Timer4
+   35 00000000         
+   36 00000000         
+   37 00000000                 IMPORT           State_LED
+   38 00000000                 IMPORT           Passage_CC
+   39 00000000         
+   40 00000000                 EXPORT           CopieTVI
+   41 00000000         
+   42 00000000                 EXPORT           Capteur_Togg
+   43 00000000                 EXPORT           Timer_CC
+   44 00000000                 EXPORT           Timer_UP
+   45 00000000                 EXPORT           Timer_UP4
+   46 00000000         
+   47 00000000         
+   48 00000000                 IMPORT           Rampe
+   49 00000000         
+   50 00000000         ;*******************************************************
+                       *******************
+   51 00000000         
+   52 00000000         
+   53 00000000         
+   54 00000000         ;***************CONSTANTES******************************
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                       *******************
+   55 00000000         
+   56 00000000                 include          REG_UTILES.inc
+    1 00000000         
+    2 00000000         ;**************************************
+    3 00000000         ;     Les adresess utiles  
+    4 00000000         ;***************************************
+    5 00000000         
+    6 00000000         
+    7 00000000         ;**************************************
+    8 00000000         ;     Affectation des bits GPIO  
+    9 00000000         ;***************************************
+   10 00000000         ; GSLCK..... PA0 
+   11 00000000         ; DSPRG..... PA1 
+   12 00000000         ; BLANK..... PA2 
+   13 00000000         ; XLAT...... PA3
+   14 00000000         ; VPRG...... PA4
+   15 00000000         ; SCLK...... PA5
+   16 00000000         ; SIN1...... PA7
+   17 00000000         ;Capteur.....PA8
+   18 00000000         
+   19 00000000         ;LED.........PB10
+   20 00000000         ;****************************************/
+   21 00000000         
+   22 00000000 00000008 
+                       Nbsecteurs
+                               equ              8
+   23 00000000 00000003 
+                       PuissanceNbSecteur
+                               equ              3
+   24 00000000         
+   25 00000000 40010800 
+                       GPIOBASEA
+                               EQU              0X40010800
+   26 00000000 40010C00 
+                       GPIOBASEB
+                               EQU              0X40010C00
+   27 00000000         
+   28 00000000 00000008 
+                       OffsetInput
+                               EQU              0x08
+   29 00000000 0000000C 
+                       OffsetOutput
+                               EQU              0x0C
+   30 00000000 00000010 
+                       OffsetSet
+                               EQU              0x10
+   31 00000000 00000014 
+                       OffsetReset
+                               EQU              0x14
+   32 00000000         
+   33 00000000         
+   34 00000000 00000080 
+                       MaskSerial_In1
+                               equ              0x80
+   35 00000000 00000080 
+                       MaskSerial_Dots
+                               equ              0x80
+   36 00000000 00000010 
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+                       MaskVprg
+                               equ              0x10
+   37 00000000 00000008 
+                       MaskXlat
+                               equ              0x08
+   38 00000000 00000004 
+                       MaskBlank
+                               equ              0x04
+   39 00000000 00000020 
+                       MaskSclk
+                               equ              0x20
+   40 00000000 00000002 
+                       MaskDsprg
+                               equ              0x02
+   41 00000000 00000001 
+                       MaskGsclk
+                               equ              0x01
+   42 00000000         
+   43 00000000         
+   44 00000000 E000ED08 
+                       SCB_VTOR
+                               EQU              0xE000ED08
+   45 00000000 40012C10 
+                       TIM1_SR EQU              0x40012c10
+   46 00000000 40012C24 
+                       TIM1_CNT
+                               EQU              0x40012c24
+   47 00000000 4000082C 
+                       TIM4_ARR
+                               EQU              0x4000082C
+   48 00000000 40000810 
+                       TIM4_SR EQU              0x40000810
+   49 00000000         
+   50 00000000         
+   51 00000000         
+   52 00000000         
+   53 00000000         
+   54 00000000                 END
+   57 00000000         
+   58 00000000 00000100 
+                       TailleTVI
+                               EQU              256
+   59 00000000         
+   60 00000000 00000000 
+                       AdrTVI  EQU              0x0
+   61 00000000                 EXPORT           AdrTVI
+   62 00000000 00000005 
+                       BIT_CLK EQU              5
+   63 00000000 00000007 
+                       BIT_SIN EQU              7
+   64 00000000 00000030 
+                       NB_LED  EQU              48
+   65 00000000 0000000C 
+                       NB_BIT  EQU              12
+   66 00000000         ;*******************************************************
+                       *******************
+   67 00000000         
+   68 00000000         
+   69 00000000         ;***************VARIABLES*******************************
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+                       *******************
+   70 00000000                 AREA             MesDonnees, data, readwrite
+   71 00000000         
+   72 00000000         
+   73 00000000 00      Num_Secteur_Courant
+                               DCB              0
+   74 00000001 00 00 00 
+              00000000 Capture DCD              0
+   75 00000008 00000000 
+                       Valcourante
+                               DCD              0
+   76 0000000C 00000000 
+                       PisteMire
+                               DCD              0
+   77 00000010         
+   78 00000010         ;*******************************************************
+                       *******************
+   79 00000010         
+   80 00000010         
+   81 00000010         ;*******************************************************
+                       *******************
+   82 00000010         
+   83 00000010         ;***************CODE************************************
+                       *******************
+   84 00000010                 AREA             moncode, code, readonly
+   85 00000000         ;*******************************************************
+                       *******************
+   86 00000000         Changement_Barette
+                               PROC
+   87 00000000 B509            PUSH             {LR,R3,R0}
+   88 00000002         
+   89 00000002         ; si on est sur la dernière barette, on reviens au début
+                       
+   90 00000002 2F08            CMP              R7,#8
+   91 00000004 D101            BNE              Barette
+   92 00000006 F04F 0700       MOV              R7,#0
+   93 0000000A         
+   94 0000000A 48C9    Barette LDR              R0,= Rampe
+   95 0000000C F04F 0330       MOV              R3, #48
+   96 00000010 FB07 0003       MLA              R0,R7,R3,R0 ; R0 prend l'adress
+                                                            e de la barette cor
+                                                            respondant à R7
+   97 00000014         
+   98 00000014 F107 0701       ADD              R7,#1       ; incrémentation du
+                                                             secteur actuel
+   99 00000018         
+  100 00000018 E8BD 4009       POP              {LR,R3,R0}
+  101 0000001C 4770            BX               LR
+  102 0000001E                 ENDP
+  103 0000001E         
+  104 0000001E         
+  105 0000001E         Timer_UP4
+                               PROC
+  106 0000001E         
+  107 0000001E B503            PUSH             {R0, R1, LR}
+  108 00000020         
+  109 00000020 F7FF FFFE       BL               Changement_Barette ; changement
+                                                             de la barette affi
+                                                            ché  
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  110 00000024 F7FF FFFE       BL               DriverReg   ; R0 : adresse de l
+                                                            a barette  
+  111 00000028         
+  112 00000028         ; AQUITEMENT
+  113 00000028 49C2            LDR              R1,=TIM4_SR
+  114 0000002A 6808            LDR              R0,[R1]
+  115 0000002C F020 0001       AND              R0,#~(0x01)
+  116 00000030 6008            STR              R0,[R1]
+  117 00000032         
+  118 00000032 E8BD 4003       POP              {R0, R1, LR}
+  119 00000036 4770            BX               LR
+  120 00000038         
+  121 00000038                 ENDP
+  122 00000038         
+  123 00000038         ;#######################################################
+                       #################
+  124 00000038         ; Procédure It_Capteur
+  125 00000038         ;#######################################################
+                       #################
+  126 00000038         ; Variables globales : Passage_cc, TIM_SR
+  127 00000038         ; Registres modifiés : R0, R1
+  128 00000038         ;-------------------------------------------------------
+                       -----------------
+  129 00000038         
+  130 00000038         
+  131 00000038         Timer_UP
+                               PROC
+  132 00000038         
+  133 00000038 B502            PUSH             {R1, LR}
+  134 0000003A         
+  135 0000003A 48BF            LDR              R0, =Capture
+  136 0000003C F04F 0100       MOV              R1, #0
+  137 00000040 6001            STR              R1, [R0]    ;On met à 0 la vale
+                                                            ur de Capture
+  138 00000042         
+  139 00000042 F7FF FFFE       BL               Stop_Timer4
+  140 00000046         
+  141 00000046 48BD            LDR              R0, =TIM1_SR
+  142 00000048 6801            LDR              R1, [R0]
+  143 0000004A F021 0101       AND              R1, R1, #0xFFFFFFFE
+  144 0000004E 6001            STR              R1, [R0]    ;Acquittement de l'
+                                                            interruption en eff
+                                                            açant de bit de ran
+                                                            g 0 trouvé dans TIM
+                                                            1_SR
+  145 00000050         
+  146 00000050 E8BD 4002       POP              {R1, LR}
+  147 00000054 4770            BX               LR
+  148 00000056         
+  149 00000056                 ENDP
+  150 00000056         
+  151 00000056         ;#######################################################
+                       #################
+  152 00000056         ; Procédure It_Capteur
+  153 00000056         ;#######################################################
+                       #################
+  154 00000056         ; Variables globales : Passage_cc
+  155 00000056         ; Registres modifiés : R0, R1
+  156 00000056         ;-------------------------------------------------------
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+                       -----------------
+  157 00000056         
+  158 00000056         Timer_CC
+                               PROC
+  159 00000056         
+  160 00000056 B50E            PUSH             {R1-R3, LR}
+  161 00000058 48B7            LDR              R0, =Capture ;Capture est notre
+                                                             compteur pour s'as
+                                                            surer que la roue f
+                                                            ait bien 3 tours à 
+                                                            vitesse suffisante 
+                                                            
+  162 0000005A 6801            LDR              R1, [R0]
+  163 0000005C 2903            CMP              R1, #3
+  164 0000005E 4AB8            LDR              R2, =PisteMire
+  165 00000060 F04F 0300       MOV              R3, #0
+  166 00000064 6013            STR              R3, [R2]    ;On rédemarre la Pi
+                                                            ste à 0 parce que s
+                                                            i on est dans Timer
+                                                            _CC, c'est dû au fa
+                                                            it que la roue a fa
+                                                            it un tour complet
+  167 00000066 D00E            BEQ              BonneVitesse ;Si R1 = 3, ça veu
+                                                            t dire que la roue 
+                                                            a tourné 3 fois, c'
+                                                            est suffisant pour 
+                                                            assurer la vitesse 
+                                                            radiale constante e
+                                                            t faire un bon calc
+                                                            ul de TIM4_ARR
+  168 00000068         
+  169 00000068 F101 0101       ADD              R1, R1, #1
+  170 0000006C 6001            STR              R1, [R0]    ;Sinon, on augmente
+                                                             1 à la valeur de C
+                                                            apture
+  171 0000006E         
+  172 0000006E 48B5            LDR              R0, =TIM1_CNT
+  173 00000070 F04F 0100       MOV              R1, #0
+  174 00000074 6001            STR              R1, [R0]    ;On redémarre le co
+                                                            mpteur de TIM1 à 0
+  175 00000076         
+  176 00000076 48B1            LDR              R0, =TIM1_SR
+  177 00000078 6801            LDR              R1, [R0]
+  178 0000007A F021 0102       AND              R1, R1, #0xFFFFFFFD
+  179 0000007E 6001            STR              R1, [R0]    ;Acquittement de l'
+                                                            interruption
+  180 00000080         
+  181 00000080 E8BD 400E       POP              {R1-R3, LR}
+  182 00000084 4770            BX               LR          ;Fin de l'interrupt
+                                                            ion
+  183 00000086         
+  184 00000086         BonneVitesse                         ;Partie de la proce
+                                                            dure Timer_CC
+  185 00000086         
+  186 00000086 48AF            LDR              R0, =TIM1_CNT
+  187 00000088 6801            LDR              R1, [R0]    ;Cette valeur corre
+                                                            spond à la valeur d
+                                                            e Tr (la roue tourn
+                                                            e à une vitesse con
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+                                                            stante)
+  188 0000008A F04F 0208       LDR              R2, =Nbsecteurs
+  189 0000008E FBB1 F1F2       UDIV             R1, R1, R2  ;Maintenant on calc
+                                                            ule la valeur de Re
+                                                            load
+  190 00000092 48AD            LDR              R0, =TIM4_ARR
+  191 00000094 6001            STR              R1, [R0]
+  192 00000096         
+  193 00000096 48A9            LDR              R0, =TIM1_SR
+  194 00000098 6801            LDR              R1, [R0]
+  195 0000009A F021 0102       AND              R1, R1, #0xFFFFFFFD
+  196 0000009E 6001            STR              R1, [R0]    ;Acquittement de l'
+                                                            interruption en eff
+                                                            açant le bit de ran
+                                                            g 1 trouvé dans TIM
+                                                            1_SR
+  197 000000A0         
+  198 000000A0 48A8            LDR              R0, =TIM1_CNT
+  199 000000A2 F04F 0100       MOV              R1, #0
+  200 000000A6 6001            STR              R1, [R0]    ;On redémarre le co
+                                                            mpteur de TIM1 à 0
+  201 000000A8         
+  202 000000A8 F7FF FFFE       BL               Run_Timer4  ;Démarrage du Timer
+                                                            4 pour commencer l'
+                                                            affichage des secte
+                                                            urs
+  203 000000AC         
+  204 000000AC E8BD 400E       POP              {R1-R3, LR}
+  205 000000B0 4770            BX               LR
+  206 000000B2         
+  207 000000B2                 ENDP
+  208 000000B2         
+  209 000000B2         ;#######################################################
+                       #################
+  210 000000B2         ;Procédure Capteur_Togg
+  211 000000B2         ;#######################################################
+                       #################
+  212 000000B2         ; Variables globales : state_LED
+  213 000000B2         ; Registres modifiés : R0, R1
+  214 000000B2         ;-------------------------------------------------------
+                       -----------------
+  215 000000B2         
+  216 000000B2         Capteur_Togg
+                               PROC
+  217 000000B2 B503            PUSH             {R0, R1,LR}
+  218 000000B4         
+  219 000000B4 48A5            LDR              R0,= State_LED
+  220 000000B6 7801            LDRB             R1, [R0]
+  221 000000B8 2901            CMP              R1, #1
+  222 000000BA D105            BNE              Si_Off
+  223 000000BC F7FF FFFE 
+                       Si_On   BL               Eteint_LED
+  224 000000C0         
+  225 000000C0 F04F 0100       MOV              R1, #0
+  226 000000C4 7001            STRB             R1, [R0]
+  227 000000C6 E004            B                FinSi_LED
+  228 000000C8         
+  229 000000C8 F7FF FFFE 
+                       Si_Off  BL               Allume_LED
+
+
+
+ARM Macro Assembler    Page 8 
+
+
+  230 000000CC         
+  231 000000CC F04F 0101       MOV              R1, #1
+  232 000000D0 7001            STRB             R1, [R0]
+  233 000000D2         
+  234 000000D2 489A    FinSi_LED
+                               LDR              R0,=TIM1_SR
+  235 000000D4 6801            LDR              R1, [R0]
+  236 000000D6 F021 0102       BIC              R1, R1, #0x02 ; On efface le bi
+                                                            t 1 R1=R1 AND NOT(0
+                                                            x02)
+  237 000000DA 6001            STR              R1, [R0]
+  238 000000DC         
+  239 000000DC E8BD 4003       POP              {R0,R1,LR}
+  240 000000E0 4770            BX               LR
+  241 000000E2                 ENDP
+  242 000000E2         
+  243 000000E2         ;#######################################################
+                       #################
+  244 000000E2         ;Procédure CopieTVI
+  245 000000E2         ;#######################################################
+                       #################
+  246 000000E2         
+  247 000000E2         CopieTVI
+                               PROC
+  248 000000E2 B40F            PUSH{R0,R1,R2,R3}
+  249 000000E4         
+  250 000000E4 F04F 0100       LDR              R1,= AdrTVI ;R0=@TVI 
+  251 000000E8 F04F 0200       MOV              R2, #0      ;variable cpt 
+  252 000000EC         WhileCopie
+  253 000000EC 680B            LDR              R3, [R1]
+  254 000000EE F840 3B04       STR              R3, [R0], #4
+  255 000000F2         
+  256 000000F2 F101 0104       ADD              R1, #4
+  257 000000F6 F102 0201       ADD              R2, #1
+  258 000000FA         
+  259 000000FA F5B2 7F80       CMP              R2, #TailleTVI
+  260 000000FE D1F5            BNE              WhileCopie
+  261 00000100         
+  262 00000100 BC0F    FinCopie
+                               POP{R0,R1,R2,R3}
+  263 00000102 4770            BX               LR
+  264 00000104                 ENDP
+  265 00000104         
+  266 00000104         ;#######################################################
+                       #################
+  267 00000104         ; Procédures Driver Global
+  268 00000104         ;#######################################################
+                       #################
+  269 00000104         DriverGlobal
+                               PROC
+  270 00000104 E92D 01FE       PUSH             {R1,R2,R3,R4,R5,R6,R7,R8}
+  271 00000108         
+  272 00000108 F04F 0300       MOV              R3, #0      ;Initilisation du c
+                                                            pteur nbled à 0
+  273 0000010C F04F 0401       MOV              R4, #1      ;Initilisation du c
+                                                            pteur nbbit à 0
+  274 00000110 4E8F            LDR              R6, = Blanc
+  275 00000112         
+  276 00000112         ;Set SCLK
+
+
+
+ARM Macro Assembler    Page 9 
+
+
+  277 00000112 4990            LDR              R1, = GPIOBASEA
+  278 00000114 F04F 0220       MOV              R2, #(0x01 << 5)
+  279 00000118 820A            STRH             R2, [R1, #OffsetSet] ; sur le m
+                                                            odèle de ce qui a é
+                                                            té fait en étape 1 
+                                                            : mise à 1 de SCLK
+  280 0000011A         
+  281 0000011A         ;1-Pour NbLed = 1 à 48
+  282 0000011A 2B30    For1    CMP              R3, #48     ;Mettre en variable
+                                                             globale Nbled
+  283 0000011C DA1F            BGE              FinFor1
+  284 0000011E         
+  285 0000011E         ;(ValCourante)8 <- Barette1[NbLed]
+  286 0000011E 5CF5            LDRB             R5,[R6,R3]
+  287 00000120         
+  288 00000120         ;(ValCourante)32 <- (ValCourante)8 << 24 
+  289 00000120 EA4F 6705       LSL              R7,R5,#24
+  290 00000124         
+  291 00000124         ;2-Pour NbBit = 1 à 12
+  292 00000124 2C0C    For2    CMP              R4, #12     ;Mettre en variable
+                                                             globale NbBit
+  293 00000126 DA15            BGE              FinFor2
+  294 00000128         
+  295 00000128         ;ValCourante)32 ? (ValCourante)32 << 1 ; on positionne l
+                       e bit suivant
+  296 00000128 007F            LSLS             R7,R7,#1
+  297 0000012A         
+  298 0000012A         ;Reset(SCLK)
+  299 0000012A 498A            LDR              R1, = GPIOBASEA
+  300 0000012C F04F 0220       MOV              R2, #(0x01 << 5)
+  301 00000130 828A            STRH             R2, [R1, #OffsetReset]
+  302 00000132         
+  303 00000132         ;Si (PF((ValCourante)32) = 1) ; PF indique le bit poids 
+                       fort de la valeur
+  304 00000132 D304    Sid     BCC              Sinon
+  305 00000134         
+  306 00000134         ;Set(Sin)
+  307 00000134 4987            LDR              R1, = GPIOBASEA
+  308 00000136 F04F 0280       MOV              R2, #(0x01 << 7)
+  309 0000013A 820A            STRH             R2, [R1, #OffsetSet]
+  310 0000013C E003            B                FinSid
+  311 0000013E         
+  312 0000013E         
+  313 0000013E         Sinon                                ;Sinon  
+  314 0000013E         
+  315 0000013E         ;ReSet(Sin)
+  316 0000013E 4985            LDR              R1, = GPIOBASEA
+  317 00000140 F04F 0280       MOV              R2, #(0x01 << 7)
+  318 00000144 828A            STRH             R2, [R1, #OffsetReset]
+  319 00000146         
+  320 00000146         
+  321 00000146         FinSid                               ;FinSi   
+  322 00000146         
+  323 00000146         
+  324 00000146         ;Set(SCLK)
+  325 00000146 4983            LDR              R1, = GPIOBASEA
+  326 00000148 F04F 0220       MOV              R2, #(0x01 << 5)
+  327 0000014C 820A            STRH             R2, [R1, #OffsetSet]
+  328 0000014E         
+
+
+
+ARM Macro Assembler    Page 10 
+
+
+  329 0000014E         ;2-FinPour 
+  330 0000014E F104 0401       ADD              R4,R4,#1
+  331 00000152 E7E7            B                For2
+  332 00000154         
+  333 00000154         FinFor2
+  334 00000154         ;1-FinPour
+  335 00000154 F04F 0400       MOV              R4, #0
+  336 00000158 F103 0301       ADD              R3,R3,#1
+  337 0000015C E7DD            B                For1
+  338 0000015E         
+  339 0000015E         FinFor1
+  340 0000015E         
+  341 0000015E         ;Reset SCLK
+  342 0000015E 497D            LDR              R1, = GPIOBASEA
+  343 00000160 F04F 0220       MOV              R2, #(0x01 << 5)
+  344 00000164 828A            STRH             R2, [R1, #OffsetReset]
+  345 00000166         
+  346 00000166         ;Datasend prend 0
+  347 00000166 F04F 0100       MOV              R1,#0
+  348 0000016A F8DF 81EC       LDR              R8,=DataSend
+  349 0000016E F888 1000       STRB             R1,[R8]
+  350 00000172         
+  351 00000172 BCFE            POP              {R1,R2,R3,R4,R5,R6,R7}
+  352 00000174 4770            BX               LR
+  353 00000176                 ENDP
+  354 00000176         
+  355 00000176         
+  356 00000176         ;#######################################################
+                       #################
+  357 00000176         ; Procédure Tempo
+  358 00000176         ;#######################################################
+                       #################
+  359 00000176         ; Variables globales : -
+  360 00000176         ; Registres modifiés : R0, R1
+  361 00000176         ;-------------------------------------------------------
+                       -----------------
+  362 00000176         
+  363 00000176         Tempo   PROC
+  364 00000176         
+  365 00000176 B47E            PUSH             {R1,R2,R3,R4,R5,R6}
+  366 00000178 F04F 0100       MOV              R1, #0
+  367 0000017C F04F 0200       MOV              R2, #0
+  368 00000180 F04F 030A       MOV              R3, #10
+  369 00000184 4E75            LDR              R6,= N
+  370 00000186 FB04 F503       MUL              R5, R4,R3   ;R5 prend N fois 10
+                                                            
+  371 0000018A         
+  372 0000018A 42A9    ForT    CMP              R1, R5
+  373 0000018C DC0D            BGT              FinForT
+  374 0000018E         
+  375 0000018E 42B2    ForT2   CMP              R2, R6      ;Mettre en variable
+                                                             globale Nbled
+  376 00000190 DC06            BGT              FinForT2
+  377 00000192 BF00            NOP
+  378 00000194 BF00            NOP
+  379 00000196 BF00            NOP
+  380 00000198 BF00            NOP
+  381 0000019A         
+  382 0000019A F102 0201       ADD              R2,R2, #1
+
+
+
+ARM Macro Assembler    Page 11 
+
+
+  383 0000019E E7F6            B                ForT2
+  384 000001A0         FinForT2
+  385 000001A0 F04F 0200       MOV              R2, #0
+  386 000001A4 F101 0101       ADD              R1,R1, #1
+  387 000001A8 E7EF            B                ForT
+  388 000001AA         FinForT
+  389 000001AA         
+  390 000001AA BC7E            POP              {R1,R2,R3,R4,R5,R6}
+  391 000001AC 4770            BX               LR
+  392 000001AE                 ENDP
+  393 000001AE         
+  394 000001AE         ;#######################################################
+                       #################
+  395 000001AE         ; Procédure DriverReg
+  396 000001AE         ;#######################################################
+                       #################
+  397 000001AE         ; Variables globales : Passage_cc
+  398 000001AE         ; Registres modifiés : R0, R1
+  399 000001AE         ;-------------------------------------------------------
+                       -----------------
+  400 000001AE         
+  401 000001AE         DriverReg
+                               PROC
+  402 000001AE E92D 01BF       PUSH             {R1,R2,R3,R4,R5,R0,R7,R8}
+  403 000001B2         
+  404 000001B2 F04F 0300       MOV              R3, #0      ;Initilisation du c
+                                                            pteur nbled à 0
+  405 000001B6 F04F 0401       MOV              R4, #1      ;Initilisation du c
+                                                            pteur nbbit à 0
+  406 000001BA         ; R0 correspond à l'argument Barrette
+  407 000001BA         
+  408 000001BA         ;Set SCLK
+  409 000001BA 4966            LDR              R1, = GPIOBASEA
+  410 000001BC F04F 0220       MOV              R2, #(0x01 << 5)
+  411 000001C0 820A            STRH             R2, [R1, #OffsetSet] ; sur le m
+                                                            odèle de ce qui a é
+                                                            té fait en étape 1 
+                                                            : mise à 1 de SCLK
+  412 000001C2         
+  413 000001C2         ;1-Pour NbLed = 1 à 48
+  414 000001C2 2B30    For1R   CMP              R3, #48     ;Mettre en variable
+                                                             globale Nbled
+  415 000001C4 DA1F            BGE              FinFor1R
+  416 000001C6         
+  417 000001C6         ;(ValCourante)8 <- Barette1[NbLed]
+  418 000001C6 5CC5            LDRB             R5,[R0,R3]  ;Argument barrette 
+                                                            R0
+  419 000001C8         
+  420 000001C8         ;(ValCourante)32 <- (ValCourante)8 << 24 
+  421 000001C8 EA4F 6705       LSL              R7,R5,#24
+  422 000001CC         
+  423 000001CC         ;2-Pour NbBit = 1 à 12
+  424 000001CC 2C0C    For2R   CMP              R4, #12     ;Mettre en variable
+                                                             globale NbBit
+  425 000001CE DA15            BGE              FinFor2R
+  426 000001D0         
+  427 000001D0         ;ValCourante)32 ? (ValCourante)32 << 1 ; on positionne l
+                       e bit suivant
+  428 000001D0 007F            LSLS             R7,R7,#1
+
+
+
+ARM Macro Assembler    Page 12 
+
+
+  429 000001D2         
+  430 000001D2         ;Reset(SCLK)
+  431 000001D2 4960            LDR              R1, = GPIOBASEA
+  432 000001D4 F04F 0220       MOV              R2, #(0x01 << 5)
+  433 000001D8 828A            STRH             R2, [R1, #OffsetReset]
+  434 000001DA         
+  435 000001DA         ;Si (PF((ValCourante)32) = 1) ; PF indique le bit poids 
+                       fort de la valeur
+  436 000001DA D304    SidR    BCC              SinonR
+  437 000001DC         
+  438 000001DC         ;Set(Sin)
+  439 000001DC 495D            LDR              R1, = GPIOBASEA
+  440 000001DE F04F 0280       MOV              R2, #(0x01 << 7)
+  441 000001E2 820A            STRH             R2, [R1, #OffsetSet]
+  442 000001E4 E003            B                FinSidR
+  443 000001E6         
+  444 000001E6         SinonR                               ;Sinon  
+  445 000001E6         ;ReSet(Sin)
+  446 000001E6 495B            LDR              R1, = GPIOBASEA
+  447 000001E8 F04F 0280       MOV              R2, #(0x01 << 7)
+  448 000001EC 828A            STRH             R2, [R1, #OffsetReset]
+  449 000001EE         
+  450 000001EE         FinSidR                              ;FinSi  
+  451 000001EE         
+  452 000001EE         ;Set(SCLK)
+  453 000001EE 4959            LDR              R1, = GPIOBASEA
+  454 000001F0 F04F 0220       MOV              R2, #(0x01 << 5)
+  455 000001F4 820A            STRH             R2, [R1, #OffsetSet]
+  456 000001F6         
+  457 000001F6         ;2-FinPour 
+  458 000001F6 F104 0401       ADD              R4,R4,#1
+  459 000001FA E7E7            B                For2R
+  460 000001FC         
+  461 000001FC         FinFor2R
+  462 000001FC         
+  463 000001FC F04F 0400       MOV              R4, #0
+  464 00000200 F103 0301       ADD              R3,R3,#1
+  465 00000204 E7DD            B                For1R
+  466 00000206         
+  467 00000206         FinFor1R                             ;1-FinPour 
+  468 00000206         
+  469 00000206         ;Reset SCLK
+  470 00000206 4953            LDR              R1, = GPIOBASEA
+  471 00000208 F04F 0220       MOV              R2, #(0x01 << 5)
+  472 0000020C 828A            STRH             R2, [R1, #OffsetReset]
+  473 0000020E         
+  474 0000020E         ;Datasend prend 0
+  475 0000020E F04F 0100       MOV              R1,#0
+  476 00000212 F8DF 8144       LDR              R8,=DataSend
+  477 00000216 F888 1000       STRB             R1,[R8]
+  478 0000021A         
+  479 0000021A E8BD 01BF       POP              {R1,R2,R3,R4,R5,R0,R7,R8}
+  480 0000021E 4770            BX               LR
+  481 00000220                 ENDP
+  482 00000220         
+  483 00000220         
+  484 00000220         DriverPile
+                               PROC
+  485 00000220 F84D AD04       PUSH             {R10}
+
+
+
+ARM Macro Assembler    Page 13 
+
+
+  486 00000224 46EA            MOV              R10,SP
+  487 00000226 E92D 01FE       PUSH             {R1,R2,R3,R4,R5,R6,R7,R8}
+  488 0000022A F8DA 6004       LDR              R6, [R10, #4]
+  489 0000022E         
+  490 0000022E F04F 0300       MOV              R3, #0      ;Initilisation du c
+                                                            pteur nbled à 0
+  491 00000232 F04F 0401       MOV              R4, #1      ;Initilisation du c
+                                                            pteur nbbit à 0
+  492 00000236         ; R6 correspond à l'argument Barrette
+  493 00000236         
+  494 00000236         ;Set SCLK
+  495 00000236 4947            LDR              R1, = GPIOBASEA
+  496 00000238 F04F 0220       MOV              R2, #(0x01 << 5)
+  497 0000023C 820A            STRH             R2, [R1, #OffsetSet] ; sur le m
+                                                            odèle de ce qui a é
+                                                            té fait en étape 1 
+                                                            : mise à 1 de SCLK
+  498 0000023E         
+  499 0000023E         ;1-Pour NbLed = 1 à 48
+  500 0000023E 2B30    For1P   CMP              R3, #48     ;Mettre en variable
+                                                             globale Nbled
+  501 00000240 DA1F            BGE              FinFor1P
+  502 00000242         
+  503 00000242         ;(ValCourante)8 <- Barette1[NbLed]
+  504 00000242 5CF5            LDRB             R5,[R6,R3]  ;Argument barrette 
+                                                            R6
+  505 00000244         
+  506 00000244         ;(ValCourante)32 <- (ValCourante)8 << 24 
+  507 00000244 EA4F 6705       LSL              R7,R5,#24
+  508 00000248         
+  509 00000248         ;2-Pour NbBit = 1 à 12
+  510 00000248 2C0C    For2P   CMP              R4, #12     ;Mettre en variable
+                                                             globale NbBit
+  511 0000024A DA15            BGE              FinFor2P
+  512 0000024C         
+  513 0000024C         ;ValCourante)32 ? (ValCourante)32 << 1 ; on positionne l
+                       e bit suivant
+  514 0000024C 007F            LSLS             R7,R7,#1
+  515 0000024E         
+  516 0000024E         ;Reset(SCLK)
+  517 0000024E 4941            LDR              R1, = GPIOBASEA
+  518 00000250 F04F 0220       MOV              R2, #(0x01 << 5)
+  519 00000254 828A            STRH             R2, [R1, #OffsetReset]
+  520 00000256         
+  521 00000256         ;Si (PF((ValCourante)32) = 1) ; PF indique le bit poids 
+                       fort de la valeur
+  522 00000256 D304    SidP    BCC              SinonP
+  523 00000258         
+  524 00000258         ;Set(Sin)
+  525 00000258 493E            LDR              R1, = GPIOBASEA
+  526 0000025A F04F 0280       MOV              R2, #(0x01 << 7)
+  527 0000025E 820A            STRH             R2, [R1, #OffsetSet]
+  528 00000260 E003            B                FinSidP
+  529 00000262         
+  530 00000262         SinonP                               ;Sinon  
+  531 00000262         ;ReSet(Sin)
+  532 00000262 493C            LDR              R1, = GPIOBASEA
+  533 00000264 F04F 0280       MOV              R2, #(0x01 << 7)
+  534 00000268 828A            STRH             R2, [R1, #OffsetReset]
+
+
+
+ARM Macro Assembler    Page 14 
+
+
+  535 0000026A         
+  536 0000026A         FinSidP                              ;FinSi  
+  537 0000026A         
+  538 0000026A         ;Set(SCLK)
+  539 0000026A 493A            LDR              R1, = GPIOBASEA
+  540 0000026C F04F 0220       MOV              R2, #(0x01 << 5)
+  541 00000270 820A            STRH             R2, [R1, #OffsetSet]
+  542 00000272         
+  543 00000272         ;2-FinPour 
+  544 00000272 F104 0401       ADD              R4,R4,#1
+  545 00000276 E7E7            B                For2P
+  546 00000278         
+  547 00000278         FinFor2P
+  548 00000278         
+  549 00000278 F04F 0400       MOV              R4, #0
+  550 0000027C F103 0301       ADD              R3,R3,#1
+  551 00000280 E7DD            B                For1P
+  552 00000282         
+  553 00000282         FinFor1P                             ;1-FinPour 
+  554 00000282         
+  555 00000282         ;Reset SCLK
+  556 00000282 4934            LDR              R1, = GPIOBASEA
+  557 00000284 F04F 0220       MOV              R2, #(0x01 << 5)
+  558 00000288 828A            STRH             R2, [R1, #OffsetReset]
+  559 0000028A         
+  560 0000028A         ;Datasend prend 0
+  561 0000028A F04F 0100       MOV              R1,#0
+  562 0000028E F8DF 80C8       LDR              R8,=DataSend
+  563 00000292 F888 1000       STRB             R1,[R8]
+  564 00000296         
+  565 00000296 E8BD 05FE       POP              {R1,R2,R3,R4,R5,R6,R7,R8,R10}
+  566 0000029A 4770            BX               LR
+  567 0000029C                 ENDP
+  568 0000029C         
+  569 0000029C         
+  570 0000029C         ;#######################################################
+                       #################
+  571 0000029C         ; Procédure Allume_LED
+  572 0000029C         ;#######################################################
+                       #################
+  573 0000029C         ; Variables globales : GPIOBASEB, #OffsetSet
+  574 0000029C         ; Registres modifiés : R1 et R2
+  575 0000029C         ;-------------------------------------------------------
+                       -----------------
+  576 0000029C         
+  577 0000029C         Allume_LED
+                               PROC
+  578 0000029C B406            PUSH             {R1,R2}
+  579 0000029E         
+  580 0000029E         ; pour allumer la LED avec le registre SET
+  581 0000029E         ;(PortB.Set)16= <- (0x01 << 10)
+  582 0000029E         ;mettre le bit 10 de SET à 1
+  583 0000029E 4930            LDR              R1, = GPIOBASEB
+  584 000002A0 F44F 6280       MOV              R2, #(0x01 << 10)
+  585 000002A4 820A            STRH             R2, [R1, #OffsetSet]
+  586 000002A6         
+  587 000002A6 BC06            POP              {R1,R2}
+  588 000002A8 4770            BX               LR
+  589 000002AA                 ENDP
+
+
+
+ARM Macro Assembler    Page 15 
+
+
+  590 000002AA         
+  591 000002AA         
+  592 000002AA         ;#######################################################
+                       #################
+  593 000002AA         ; Procédure Eteint_LED
+  594 000002AA         ;#######################################################
+                       #################
+  595 000002AA         ; Variables globales : GPIOBASEB, #OffsetReset
+  596 000002AA         ; Registres modifiés : R1 et R2
+  597 000002AA         ;-------------------------------------------------------
+                       -----------------
+  598 000002AA         
+  599 000002AA         Eteint_LED
+                               PROC
+  600 000002AA B406            PUSH             {R1,R2}
+  601 000002AC         ; pour éteindre la LED avec le registre RESET
+  602 000002AC         ;(PortB.Reset)16= <- (0x01 << 10)
+  603 000002AC 492C            LDR              R1, = GPIOBASEB
+  604 000002AE         
+  605 000002AE F44F 6280       MOV              R2, #(0x01 << 10)
+  606 000002B2 828A            STRH             R2, [R1, #OffsetReset]
+  607 000002B4         
+  608 000002B4 BC06            POP              {R1,R2}
+  609 000002B6 4770            BX               LR
+  610 000002B8                 ENDP
+  611 000002B8         
+  612 000002B8         
+  613 000002B8         ;#######################################################
+                       #################
+  614 000002B8         ; Procédure OldEtatUn
+  615 000002B8         ;#######################################################
+                       #################
+  616 000002B8         ; Variables globales : OldEtat
+  617 000002B8         ; Registres modifiés : R8 et R11
+  618 000002B8         ;-------------------------------------------------------
+                       -----------------
+  619 000002B8         
+  620 000002B8         OldEtatUn
+                               PROC
+  621 000002B8         ;Pour mettre la variable OldEtat à 1
+  622 000002B8 E92D 0900       PUSH             {R8,R11}
+  623 000002BC         
+  624 000002BC F8DF 80A4       LDR              R8, = OldEtat
+  625 000002C0 F9B8 B000       LDRSH            R11, [R8]
+  626 000002C4 F04F 0B01       MOV              R11, #0x01
+  627 000002C8 F8A8 B000       STRH             R11, [R8]   ;OldEtat à 1
+  628 000002CC         
+  629 000002CC E8BD 0900       POP              {R8,R11}
+  630 000002D0 4770            BX               LR
+  631 000002D2                 ENDP
+  632 000002D2         
+  633 000002D2         ;#######################################################
+                       #################
+  634 000002D2         ; Procédure OldEtatZero
+  635 000002D2         ;#######################################################
+                       #################
+  636 000002D2         ; Variables globales : OldEtat
+  637 000002D2         ; Registres modifiés : R8 et R11
+  638 000002D2         ;-------------------------------------------------------
+
+
+
+ARM Macro Assembler    Page 16 
+
+
+                       -----------------
+  639 000002D2         
+  640 000002D2         OldEtatZero
+                               PROC
+  641 000002D2         ;Pour mettre la variable OldEtat à 0
+  642 000002D2 E92D 0900       PUSH             {R8,R11}
+  643 000002D6         
+  644 000002D6 F8DF 808C       LDR              R8, = OldEtat
+  645 000002DA F9B8 B000       LDRSH            R11, [R8]
+  646 000002DE F04F 0B00       MOV              R11, #0x00
+  647 000002E2 F8A8 B000       STRH             R11, [R8]   ;OldEtat à 0
+  648 000002E6         
+  649 000002E6 E8BD 0900       POP              {R8,R11}
+  650 000002EA 4770            BX               LR
+  651 000002EC                 ENDP
+  652 000002EC         
+  653 000002EC         ;#######################################################
+                       #################
+  654 000002EC         ; Procédure AllumeLEDOutput
+  655 000002EC         ;#######################################################
+                       #################
+  656 000002EC         ; Variables globales : OffsetOutput, PortB.Output
+  657 000002EC         ; Registres modifiés : R1 à R4
+  658 000002EC         ;-------------------------------------------------------
+                       -----------------
+  659 000002EC         
+  660 000002EC         AllumeLEDOutput
+                               PROC
+  661 000002EC         ; pour allumer la LED avec le registre output
+  662 000002EC         ;Etat_PortB = <- (PortB.Output)16
+  663 000002EC         ;Etat_PortB = (Etat_PortB) ou (0x01 << 10)
+  664 000002EC         ;(PortB.Output)16 = <- Etat_PortB
+  665 000002EC B41E            PUSH             {R1,R2,R3,R4}
+  666 000002EE         
+  667 000002EE 898B            LDRH             R3, [R1, #OffsetOutput]
+  668 000002F0 EA43 0402       ORR              R4, R3, R2
+  669 000002F4 818C            STRH             R4,  [R1, #OffsetOutput]
+  670 000002F6         
+  671 000002F6 B41E            PUSH             {R1,R2,R3,R4}
+  672 000002F8 4770            BX               LR
+  673 000002FA                 ENDP
+  674 000002FA         
+  675 000002FA         ;#######################################################
+                       #################
+  676 000002FA         ; Procédure EteintLEDOutput
+  677 000002FA         ;#######################################################
+                       #################
+  678 000002FA         ;
+  679 000002FA         ; Paramètre entrant  : PortB.Output
+  680 000002FA         ; Paramètre sortant  : PortB.Output
+  681 000002FA         ; Variables globales : #OffsetOutput
+  682 000002FA         ; Registres modifiés : R1 à R5
+  683 000002FA         ;-------------------------------------------------------
+                       -----------------
+  684 000002FA         
+  685 000002FA         EteintLEDOutput
+                               PROC
+  686 000002FA         ; pour éteindre la LED avec le registre output
+  687 000002FA         ;Etat_PortB = <- (PortB.Output)16
+
+
+
+ARM Macro Assembler    Page 17 
+
+
+  688 000002FA         ;Etat_PortB = (Etat_PortB) et not((0x01 << 10))
+  689 000002FA         ;(PortB.Output)16 = <- Etat_PortB
+  690 000002FA B43E            PUSH             {R1,R2,R3,R4,R5}
+  691 000002FC         
+  692 000002FC 898B            LDRH             R3, [R1, #OffsetOutput]
+  693 000002FE F44F 6280       MOV              R2, #(0x01 << 10)
+  694 00000302 EA6F 0502       MVN              R5, R2
+  695 00000306 EA03 0405       AND              R4, R3, R5
+  696 0000030A 818C            STRH             R4, [R1, #OffsetOutput]
+  697 0000030C         
+  698 0000030C BC3E            POP              {R1,R2,R3,R4,R5}
+  699 0000030E 4770            BX               LR
+  700 00000310                 ENDP
+  701 00000310         
+  702 00000310         ;#######################################################
+                       #################
+  703 00000310         ; Procédure ChangementLED
+  704 00000310         ;#######################################################
+                       #################
+  705 00000310         ;
+  706 00000310         ; Paramètre entrant  : Nombre d'alternattions
+  707 00000310         ; Paramètre sortant  : -
+  708 00000310         ; Variables globales : -
+  709 00000310         ; Registres modifiés : R7 et LR
+  710 00000310         ;-------------------------------------------------------
+                       -----------------
+  711 00000310         
+  712 00000310         ChangementLED
+                               PROC
+  713 00000310 B580            PUSH             {R7,LR}
+  714 00000312 2F01    SiLED   CMP              R7, #1
+  715 00000314 D004            BEQ              SinonLED
+  716 00000316 F7FF FFFE       BL               Allume_LED  ; pour allumer la L
+                                                            ED avec le registre
+                                                             SET
+  717 0000031A F04F 0701       MOV              R7, #1
+  718 0000031E E003            B                SortieLED
+  719 00000320         SinonLED
+  720 00000320 F7FF FFFE       BL               Eteint_LED  ; pour éteindre la 
+                                                            LED avec le registr
+                                                            e RESET
+  721 00000324 F04F 0700       MOV              R7, #0
+  722 00000328         SortieLED
+  723 00000328 E8BD 4080       POP              {R7,LR}
+  724 0000032C 4770            BX               LR
+  725 0000032E                 ENDP
+  726 0000032E         
+  727 0000032E         ;#######################################################
+                       #################
+  728 0000032E         ; Procédure ????
+  729 0000032E         ;#######################################################
+                       #################
+  730 0000032E         ;
+  731 0000032E         ; Paramètre entrant  : ???
+  732 0000032E         ; Paramètre sortant  : ???
+  733 0000032E         ; Variables globales : ???
+  734 0000032E         ; Registres modifiés : ???
+  735 0000032E         ;-------------------------------------------------------
+                       -----------------
+
+
+
+ARM Macro Assembler    Page 18 
+
+
+  736 0000032E         
+  737 0000032E         
+  738 0000032E         
+  739 0000032E         
+  740 0000032E         
+  741 0000032E         
+  742 0000032E         
+  743 0000032E         ;*******************************************************
+                       *******************
+  744 0000032E                 END
+              00 00 00000000 
+              40000810 
+              00000000 
+              40012C10 
+              00000000 
+              40012C24 
+              4000082C 
+              00000000 
+              00000000 
+              40010800 
+              00000000 
+              00000000 
+              40010C00 
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
+ork --depend=.\objects\fonctionetape.d -o.\objects\fonctionetape.o -I.\RTE\Devi
+ce\STM32F107VC -I.\RTE\_R_el -IC:\Programdata\Keil\Arm\Packs\ARM\CMSIS\5.7.0\CM
+SIS\Core\Include -IC:\Programdata\Keil\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Devic
+e\Include --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1" --predefi
+ne="__UVISION_VERSION SETA 530" --predefine="_RTE_ SETA 1" --predefine="STM32F1
+0X_CL SETA 1" --predefine="_RTE_ SETA 1" --predefine="STM32F10X_CL SETA 1" --li
+st=.\listings\fonctionetape.lst FonctionEtape.asm
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+Capture 00000004
+
+Symbol: Capture
+   Definitions
+      At line 74 in file FonctionEtape.asm
+   Uses
+      At line 135 in file FonctionEtape.asm
+      At line 161 in file FonctionEtape.asm
+
+MesDonnees 00000000
+
+Symbol: MesDonnees
+   Definitions
+      At line 70 in file FonctionEtape.asm
+   Uses
+      None
+Comment: MesDonnees unused
+Num_Secteur_Courant 00000000
+
+Symbol: Num_Secteur_Courant
+   Definitions
+      At line 73 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Num_Secteur_Courant unused
+PisteMire 0000000C
+
+Symbol: PisteMire
+   Definitions
+      At line 76 in file FonctionEtape.asm
+   Uses
+      At line 164 in file FonctionEtape.asm
+Comment: PisteMire used once
+Valcourante 00000008
+
+Symbol: Valcourante
+   Definitions
+      At line 75 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Valcourante unused
+5 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+AllumeLEDOutput 000002EC
+
+Symbol: AllumeLEDOutput
+   Definitions
+      At line 660 in file FonctionEtape.asm
+   Uses
+      None
+Comment: AllumeLEDOutput unused
+Allume_LED 0000029C
+
+Symbol: Allume_LED
+   Definitions
+      At line 577 in file FonctionEtape.asm
+   Uses
+      At line 14 in file FonctionEtape.asm
+      At line 229 in file FonctionEtape.asm
+      At line 716 in file FonctionEtape.asm
+
+Barette 0000000A
+
+Symbol: Barette
+   Definitions
+      At line 94 in file FonctionEtape.asm
+   Uses
+      At line 91 in file FonctionEtape.asm
+Comment: Barette used once
+BonneVitesse 00000086
+
+Symbol: BonneVitesse
+   Definitions
+      At line 184 in file FonctionEtape.asm
+   Uses
+      At line 167 in file FonctionEtape.asm
+Comment: BonneVitesse used once
+Capteur_Togg 000000B2
+
+Symbol: Capteur_Togg
+   Definitions
+      At line 216 in file FonctionEtape.asm
+   Uses
+      At line 42 in file FonctionEtape.asm
+Comment: Capteur_Togg used once
+ChangementLED 00000310
+
+Symbol: ChangementLED
+   Definitions
+      At line 712 in file FonctionEtape.asm
+   Uses
+      At line 18 in file FonctionEtape.asm
+Comment: ChangementLED used once
+Changement_Barette 00000000
+
+Symbol: Changement_Barette
+   Definitions
+      At line 86 in file FonctionEtape.asm
+   Uses
+      At line 109 in file FonctionEtape.asm
+Comment: Changement_Barette used once
+CopieTVI 000000E2
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: CopieTVI
+   Definitions
+      At line 247 in file FonctionEtape.asm
+   Uses
+      At line 40 in file FonctionEtape.asm
+Comment: CopieTVI used once
+DriverGlobal 00000104
+
+Symbol: DriverGlobal
+   Definitions
+      At line 269 in file FonctionEtape.asm
+   Uses
+      At line 20 in file FonctionEtape.asm
+Comment: DriverGlobal used once
+DriverPile 00000220
+
+Symbol: DriverPile
+   Definitions
+      At line 484 in file FonctionEtape.asm
+   Uses
+      At line 22 in file FonctionEtape.asm
+Comment: DriverPile used once
+DriverReg 000001AE
+
+Symbol: DriverReg
+   Definitions
+      At line 401 in file FonctionEtape.asm
+   Uses
+      At line 21 in file FonctionEtape.asm
+      At line 110 in file FonctionEtape.asm
+
+EteintLEDOutput 000002FA
+
+Symbol: EteintLEDOutput
+   Definitions
+      At line 685 in file FonctionEtape.asm
+   Uses
+      None
+Comment: EteintLEDOutput unused
+Eteint_LED 000002AA
+
+Symbol: Eteint_LED
+   Definitions
+      At line 599 in file FonctionEtape.asm
+   Uses
+      At line 15 in file FonctionEtape.asm
+      At line 223 in file FonctionEtape.asm
+      At line 720 in file FonctionEtape.asm
+
+FinCopie 00000100
+
+Symbol: FinCopie
+   Definitions
+      At line 262 in file FonctionEtape.asm
+   Uses
+      None
+Comment: FinCopie unused
+FinFor1 0000015E
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: FinFor1
+   Definitions
+      At line 339 in file FonctionEtape.asm
+   Uses
+      At line 283 in file FonctionEtape.asm
+Comment: FinFor1 used once
+FinFor1P 00000282
+
+Symbol: FinFor1P
+   Definitions
+      At line 553 in file FonctionEtape.asm
+   Uses
+      At line 501 in file FonctionEtape.asm
+Comment: FinFor1P used once
+FinFor1R 00000206
+
+Symbol: FinFor1R
+   Definitions
+      At line 467 in file FonctionEtape.asm
+   Uses
+      At line 415 in file FonctionEtape.asm
+Comment: FinFor1R used once
+FinFor2 00000154
+
+Symbol: FinFor2
+   Definitions
+      At line 333 in file FonctionEtape.asm
+   Uses
+      At line 293 in file FonctionEtape.asm
+Comment: FinFor2 used once
+FinFor2P 00000278
+
+Symbol: FinFor2P
+   Definitions
+      At line 547 in file FonctionEtape.asm
+   Uses
+      At line 511 in file FonctionEtape.asm
+Comment: FinFor2P used once
+FinFor2R 000001FC
+
+Symbol: FinFor2R
+   Definitions
+      At line 461 in file FonctionEtape.asm
+   Uses
+      At line 425 in file FonctionEtape.asm
+Comment: FinFor2R used once
+FinForT 000001AA
+
+Symbol: FinForT
+   Definitions
+      At line 388 in file FonctionEtape.asm
+   Uses
+      At line 373 in file FonctionEtape.asm
+Comment: FinForT used once
+FinForT2 000001A0
+
+Symbol: FinForT2
+   Definitions
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 384 in file FonctionEtape.asm
+   Uses
+      At line 376 in file FonctionEtape.asm
+Comment: FinForT2 used once
+FinSi_LED 000000D2
+
+Symbol: FinSi_LED
+   Definitions
+      At line 234 in file FonctionEtape.asm
+   Uses
+      At line 227 in file FonctionEtape.asm
+Comment: FinSi_LED used once
+FinSid 00000146
+
+Symbol: FinSid
+   Definitions
+      At line 321 in file FonctionEtape.asm
+   Uses
+      At line 310 in file FonctionEtape.asm
+Comment: FinSid used once
+FinSidP 0000026A
+
+Symbol: FinSidP
+   Definitions
+      At line 536 in file FonctionEtape.asm
+   Uses
+      At line 528 in file FonctionEtape.asm
+Comment: FinSidP used once
+FinSidR 000001EE
+
+Symbol: FinSidR
+   Definitions
+      At line 450 in file FonctionEtape.asm
+   Uses
+      At line 442 in file FonctionEtape.asm
+Comment: FinSidR used once
+For1 0000011A
+
+Symbol: For1
+   Definitions
+      At line 282 in file FonctionEtape.asm
+   Uses
+      At line 337 in file FonctionEtape.asm
+Comment: For1 used once
+For1P 0000023E
+
+Symbol: For1P
+   Definitions
+      At line 500 in file FonctionEtape.asm
+   Uses
+      At line 551 in file FonctionEtape.asm
+Comment: For1P used once
+For1R 000001C2
+
+Symbol: For1R
+   Definitions
+      At line 414 in file FonctionEtape.asm
+   Uses
+      At line 465 in file FonctionEtape.asm
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Relocatable symbols
+
+Comment: For1R used once
+For2 00000124
+
+Symbol: For2
+   Definitions
+      At line 292 in file FonctionEtape.asm
+   Uses
+      At line 331 in file FonctionEtape.asm
+Comment: For2 used once
+For2P 00000248
+
+Symbol: For2P
+   Definitions
+      At line 510 in file FonctionEtape.asm
+   Uses
+      At line 545 in file FonctionEtape.asm
+Comment: For2P used once
+For2R 000001CC
+
+Symbol: For2R
+   Definitions
+      At line 424 in file FonctionEtape.asm
+   Uses
+      At line 459 in file FonctionEtape.asm
+Comment: For2R used once
+ForT 0000018A
+
+Symbol: ForT
+   Definitions
+      At line 372 in file FonctionEtape.asm
+   Uses
+      At line 387 in file FonctionEtape.asm
+Comment: ForT used once
+ForT2 0000018E
+
+Symbol: ForT2
+   Definitions
+      At line 375 in file FonctionEtape.asm
+   Uses
+      At line 383 in file FonctionEtape.asm
+Comment: ForT2 used once
+OldEtatUn 000002B8
+
+Symbol: OldEtatUn
+   Definitions
+      At line 620 in file FonctionEtape.asm
+   Uses
+      At line 16 in file FonctionEtape.asm
+Comment: OldEtatUn used once
+OldEtatZero 000002D2
+
+Symbol: OldEtatZero
+   Definitions
+      At line 640 in file FonctionEtape.asm
+   Uses
+      At line 17 in file FonctionEtape.asm
+Comment: OldEtatZero used once
+SiLED 00000312
+
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: SiLED
+   Definitions
+      At line 714 in file FonctionEtape.asm
+   Uses
+      None
+Comment: SiLED unused
+Si_Off 000000C8
+
+Symbol: Si_Off
+   Definitions
+      At line 229 in file FonctionEtape.asm
+   Uses
+      At line 222 in file FonctionEtape.asm
+Comment: Si_Off used once
+Si_On 000000BC
+
+Symbol: Si_On
+   Definitions
+      At line 223 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Si_On unused
+Sid 00000132
+
+Symbol: Sid
+   Definitions
+      At line 304 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Sid unused
+SidP 00000256
+
+Symbol: SidP
+   Definitions
+      At line 522 in file FonctionEtape.asm
+   Uses
+      None
+Comment: SidP unused
+SidR 000001DA
+
+Symbol: SidR
+   Definitions
+      At line 436 in file FonctionEtape.asm
+   Uses
+      None
+Comment: SidR unused
+Sinon 0000013E
+
+Symbol: Sinon
+   Definitions
+      At line 313 in file FonctionEtape.asm
+   Uses
+      At line 304 in file FonctionEtape.asm
+Comment: Sinon used once
+SinonLED 00000320
+
+Symbol: SinonLED
+   Definitions
+      At line 719 in file FonctionEtape.asm
+
+
+
+ARM Macro Assembler    Page 7 Alphabetic symbol ordering
+Relocatable symbols
+
+   Uses
+      At line 715 in file FonctionEtape.asm
+Comment: SinonLED used once
+SinonP 00000262
+
+Symbol: SinonP
+   Definitions
+      At line 530 in file FonctionEtape.asm
+   Uses
+      At line 522 in file FonctionEtape.asm
+Comment: SinonP used once
+SinonR 000001E6
+
+Symbol: SinonR
+   Definitions
+      At line 444 in file FonctionEtape.asm
+   Uses
+      At line 436 in file FonctionEtape.asm
+Comment: SinonR used once
+SortieLED 00000328
+
+Symbol: SortieLED
+   Definitions
+      At line 722 in file FonctionEtape.asm
+   Uses
+      At line 718 in file FonctionEtape.asm
+Comment: SortieLED used once
+Tempo 00000176
+
+Symbol: Tempo
+   Definitions
+      At line 363 in file FonctionEtape.asm
+   Uses
+      At line 24 in file FonctionEtape.asm
+Comment: Tempo used once
+Timer_CC 00000056
+
+Symbol: Timer_CC
+   Definitions
+      At line 158 in file FonctionEtape.asm
+   Uses
+      At line 43 in file FonctionEtape.asm
+Comment: Timer_CC used once
+Timer_UP 00000038
+
+Symbol: Timer_UP
+   Definitions
+      At line 131 in file FonctionEtape.asm
+   Uses
+      At line 44 in file FonctionEtape.asm
+Comment: Timer_UP used once
+Timer_UP4 0000001E
+
+Symbol: Timer_UP4
+   Definitions
+      At line 105 in file FonctionEtape.asm
+   Uses
+      At line 45 in file FonctionEtape.asm
+Comment: Timer_UP4 used once
+
+
+
+ARM Macro Assembler    Page 8 Alphabetic symbol ordering
+Relocatable symbols
+
+WhileCopie 000000EC
+
+Symbol: WhileCopie
+   Definitions
+      At line 252 in file FonctionEtape.asm
+   Uses
+      At line 260 in file FonctionEtape.asm
+Comment: WhileCopie used once
+moncode 00000000
+
+Symbol: moncode
+   Definitions
+      At line 84 in file FonctionEtape.asm
+   Uses
+      None
+Comment: moncode unused
+53 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+AdrTVI 00000000
+
+Symbol: AdrTVI
+   Definitions
+      At line 60 in file FonctionEtape.asm
+   Uses
+      At line 61 in file FonctionEtape.asm
+      At line 250 in file FonctionEtape.asm
+
+BIT_CLK 00000005
+
+Symbol: BIT_CLK
+   Definitions
+      At line 62 in file FonctionEtape.asm
+   Uses
+      None
+Comment: BIT_CLK unused
+BIT_SIN 00000007
+
+Symbol: BIT_SIN
+   Definitions
+      At line 63 in file FonctionEtape.asm
+   Uses
+      None
+Comment: BIT_SIN unused
+GPIOBASEA 40010800
+
+Symbol: GPIOBASEA
+   Definitions
+      At line 25 in file REG_UTILES.inc
+   Uses
+      At line 277 in file FonctionEtape.asm
+      At line 299 in file FonctionEtape.asm
+      At line 307 in file FonctionEtape.asm
+      At line 316 in file FonctionEtape.asm
+      At line 325 in file FonctionEtape.asm
+      At line 342 in file FonctionEtape.asm
+      At line 409 in file FonctionEtape.asm
+      At line 431 in file FonctionEtape.asm
+      At line 439 in file FonctionEtape.asm
+      At line 446 in file FonctionEtape.asm
+      At line 453 in file FonctionEtape.asm
+      At line 470 in file FonctionEtape.asm
+      At line 495 in file FonctionEtape.asm
+      At line 517 in file FonctionEtape.asm
+      At line 525 in file FonctionEtape.asm
+      At line 532 in file FonctionEtape.asm
+      At line 539 in file FonctionEtape.asm
+      At line 556 in file FonctionEtape.asm
+
+GPIOBASEB 40010C00
+
+Symbol: GPIOBASEB
+   Definitions
+      At line 26 in file REG_UTILES.inc
+   Uses
+      At line 583 in file FonctionEtape.asm
+      At line 603 in file FonctionEtape.asm
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+MaskBlank 00000004
+
+Symbol: MaskBlank
+   Definitions
+      At line 38 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskBlank unused
+MaskDsprg 00000002
+
+Symbol: MaskDsprg
+   Definitions
+      At line 40 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskDsprg unused
+MaskGsclk 00000001
+
+Symbol: MaskGsclk
+   Definitions
+      At line 41 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskGsclk unused
+MaskSclk 00000020
+
+Symbol: MaskSclk
+   Definitions
+      At line 39 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskSclk unused
+MaskSerial_Dots 00000080
+
+Symbol: MaskSerial_Dots
+   Definitions
+      At line 35 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskSerial_Dots unused
+MaskSerial_In1 00000080
+
+Symbol: MaskSerial_In1
+   Definitions
+      At line 34 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskSerial_In1 unused
+MaskVprg 00000010
+
+Symbol: MaskVprg
+   Definitions
+      At line 36 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskVprg unused
+MaskXlat 00000008
+
+Symbol: MaskXlat
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Absolute symbols
+
+   Definitions
+      At line 37 in file REG_UTILES.inc
+   Uses
+      None
+Comment: MaskXlat unused
+NB_BIT 0000000C
+
+Symbol: NB_BIT
+   Definitions
+      At line 65 in file FonctionEtape.asm
+   Uses
+      None
+Comment: NB_BIT unused
+NB_LED 00000030
+
+Symbol: NB_LED
+   Definitions
+      At line 64 in file FonctionEtape.asm
+   Uses
+      None
+Comment: NB_LED unused
+Nbsecteurs 00000008
+
+Symbol: Nbsecteurs
+   Definitions
+      At line 22 in file REG_UTILES.inc
+   Uses
+      At line 188 in file FonctionEtape.asm
+Comment: Nbsecteurs used once
+OffsetInput 00000008
+
+Symbol: OffsetInput
+   Definitions
+      At line 28 in file REG_UTILES.inc
+   Uses
+      None
+Comment: OffsetInput unused
+OffsetOutput 0000000C
+
+Symbol: OffsetOutput
+   Definitions
+      At line 29 in file REG_UTILES.inc
+   Uses
+      At line 667 in file FonctionEtape.asm
+      At line 669 in file FonctionEtape.asm
+      At line 692 in file FonctionEtape.asm
+      At line 696 in file FonctionEtape.asm
+
+OffsetReset 00000014
+
+Symbol: OffsetReset
+   Definitions
+      At line 31 in file REG_UTILES.inc
+   Uses
+      At line 301 in file FonctionEtape.asm
+      At line 318 in file FonctionEtape.asm
+      At line 344 in file FonctionEtape.asm
+      At line 433 in file FonctionEtape.asm
+      At line 448 in file FonctionEtape.asm
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Absolute symbols
+
+      At line 472 in file FonctionEtape.asm
+      At line 519 in file FonctionEtape.asm
+      At line 534 in file FonctionEtape.asm
+      At line 558 in file FonctionEtape.asm
+      At line 606 in file FonctionEtape.asm
+
+OffsetSet 00000010
+
+Symbol: OffsetSet
+   Definitions
+      At line 30 in file REG_UTILES.inc
+   Uses
+      At line 279 in file FonctionEtape.asm
+      At line 309 in file FonctionEtape.asm
+      At line 327 in file FonctionEtape.asm
+      At line 411 in file FonctionEtape.asm
+      At line 441 in file FonctionEtape.asm
+      At line 455 in file FonctionEtape.asm
+      At line 497 in file FonctionEtape.asm
+      At line 527 in file FonctionEtape.asm
+      At line 541 in file FonctionEtape.asm
+      At line 585 in file FonctionEtape.asm
+
+PuissanceNbSecteur 00000003
+
+Symbol: PuissanceNbSecteur
+   Definitions
+      At line 23 in file REG_UTILES.inc
+   Uses
+      None
+Comment: PuissanceNbSecteur unused
+SCB_VTOR E000ED08
+
+Symbol: SCB_VTOR
+   Definitions
+      At line 44 in file REG_UTILES.inc
+   Uses
+      None
+Comment: SCB_VTOR unused
+TIM1_CNT 40012C24
+
+Symbol: TIM1_CNT
+   Definitions
+      At line 46 in file REG_UTILES.inc
+   Uses
+      At line 172 in file FonctionEtape.asm
+      At line 186 in file FonctionEtape.asm
+      At line 198 in file FonctionEtape.asm
+
+TIM1_SR 40012C10
+
+Symbol: TIM1_SR
+   Definitions
+      At line 45 in file REG_UTILES.inc
+   Uses
+      At line 141 in file FonctionEtape.asm
+      At line 176 in file FonctionEtape.asm
+      At line 193 in file FonctionEtape.asm
+      At line 234 in file FonctionEtape.asm
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Absolute symbols
+
+
+TIM4_ARR 4000082C
+
+Symbol: TIM4_ARR
+   Definitions
+      At line 47 in file REG_UTILES.inc
+   Uses
+      At line 190 in file FonctionEtape.asm
+Comment: TIM4_ARR used once
+TIM4_SR 40000810
+
+Symbol: TIM4_SR
+   Definitions
+      At line 48 in file REG_UTILES.inc
+   Uses
+      At line 113 in file FonctionEtape.asm
+Comment: TIM4_SR used once
+TailleTVI 00000100
+
+Symbol: TailleTVI
+   Definitions
+      At line 58 in file FonctionEtape.asm
+   Uses
+      At line 259 in file FonctionEtape.asm
+Comment: TailleTVI used once
+27 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+Blanc 00000000
+
+Symbol: Blanc
+   Definitions
+      At line 30 in file FonctionEtape.asm
+   Uses
+      At line 274 in file FonctionEtape.asm
+Comment: Blanc used once
+DataSend 00000000
+
+Symbol: DataSend
+   Definitions
+      At line 27 in file FonctionEtape.asm
+   Uses
+      At line 348 in file FonctionEtape.asm
+      At line 476 in file FonctionEtape.asm
+      At line 562 in file FonctionEtape.asm
+
+Mire 00000000
+
+Symbol: Mire
+   Definitions
+      At line 31 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Mire unused
+N 00000000
+
+Symbol: N
+   Definitions
+      At line 28 in file FonctionEtape.asm
+   Uses
+      At line 369 in file FonctionEtape.asm
+Comment: N used once
+OldEtat 00000000
+
+Symbol: OldEtat
+   Definitions
+      At line 26 in file FonctionEtape.asm
+   Uses
+      At line 624 in file FonctionEtape.asm
+      At line 644 in file FonctionEtape.asm
+
+Passage_CC 00000000
+
+Symbol: Passage_CC
+   Definitions
+      At line 38 in file FonctionEtape.asm
+   Uses
+      None
+Comment: Passage_CC unused
+Rampe 00000000
+
+Symbol: Rampe
+   Definitions
+      At line 48 in file FonctionEtape.asm
+   Uses
+      At line 94 in file FonctionEtape.asm
+Comment: Rampe used once
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+External symbols
+
+Run_Timer4 00000000
+
+Symbol: Run_Timer4
+   Definitions
+      At line 33 in file FonctionEtape.asm
+   Uses
+      At line 202 in file FonctionEtape.asm
+Comment: Run_Timer4 used once
+State_LED 00000000
+
+Symbol: State_LED
+   Definitions
+      At line 37 in file FonctionEtape.asm
+   Uses
+      At line 219 in file FonctionEtape.asm
+Comment: State_LED used once
+Stop_Timer4 00000000
+
+Symbol: Stop_Timer4
+   Definitions
+      At line 34 in file FonctionEtape.asm
+   Uses
+      At line 139 in file FonctionEtape.asm
+Comment: Stop_Timer4 used once
+10 symbols
+432 symbols in table
